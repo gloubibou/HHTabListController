@@ -209,7 +209,7 @@ static BOOL OSVersion6OrAbove = NO;
 												 name:UIApplicationDidChangeStatusBarFrameNotification
 											   object:nil];
 
-	[self.view addObserver:self forKeyPath:@"frame" options:0 context:@"frame"];
+	[self.view addObserver:self forKeyPath:@"frame" options:0 context:(__bridge void *)kFrameKey];
 }
 
 - (void)viewDidLayoutSubviews
@@ -234,11 +234,11 @@ static BOOL OSVersion6OrAbove = NO;
 - (void)dealloc
 {
 	for (UIViewController *viewController in _viewControllers) {
-		[viewController removeObserver:self forKeyPath:@"title"];
+		[viewController removeObserver:self forKeyPath:@"title" context:(__bridge void*)kTitleKey];
 	}
 
 	if ([self isViewLoaded]) {
-		[self.view removeObserver:self forKeyPath:@"frame"];
+		[self.view removeObserver:self forKeyPath:@"frame" context:(__bridge void *)kFrameKey];
 	}
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -284,7 +284,7 @@ static BOOL OSVersion6OrAbove = NO;
 - (void)setViewControllers:(NSArray *)viewControllers
 {
 	for (UIViewController *viewController in _viewControllers) {
-		[viewController removeObserver:self forKeyPath:@"title"];
+		[viewController removeObserver:self forKeyPath:@"title" context:(__bridge void*)kTitleKey];
 	}
 
 	UIViewController *oldSelectedViewController = self.selectedViewController;
