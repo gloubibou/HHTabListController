@@ -31,4 +31,6 @@
 
 @interface HHTabListContainerView : UIView
 
+@property (nonatomic, strong) UIView *contentView;
+
 @end

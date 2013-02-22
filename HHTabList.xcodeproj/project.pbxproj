@@ -53,6 +53,7 @@
 		8F80350315A4D4D8008DA1AD /* list@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list@2x.png"; sourceTree = "<group>"; };
 		8F80350615A4D836008DA1AD /* list-landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list-landscape.png"; sourceTree = "<group>"; };
 		8F80350715A4D836008DA1AD /* list-landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "list-landscape@2x.png"; sourceTree = "<group>"; };
+		8FBD874416D81A94001C18C0 /* HHTabList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HHTabList.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +127,7 @@
 		8F61E4CB15A19F6700C0DBF0 /* HHTabList */ = {
 			isa = PBXGroup;
 			children = (
+				8FBD874416D81A94001C18C0 /* HHTabList.h */,
 				8F150F6315B15E4A00EE1B9C /* Classes */,
 				8F80350F15A4D8FC008DA1AD /* Images */,
 				8F61E4CC15A19F6700C0DBF0 /* Supporting Files */,

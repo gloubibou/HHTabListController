@@ -28,6 +28,8 @@
 
 #import "HHTabListController.h"
 
+#import "HHTabList.h"
+
 #import <QuartzCore/QuartzCore.h>
 
 #import "HHTabListContainerView.h"
@@ -36,25 +38,6 @@
 
 #import <objc/runtime.h>
 
-
-#if HH_ARC_ENABLED
-#define HH_RETAIN(xx)			(xx)
-#define HH_RELEASE(xx)			xx = nil
-#define HH_AUTORELEASE(xx)		(xx)
-#define HH_CLEAN(xx)			xx = nil
-#else
-#define HH_RETAIN(xx)			[xx retain]
-#define HH_RELEASE(xx)			[xx release], xx = nil
-#define HH_AUTORELEASE(xx)		[xx autorelease]
-#define HH_CLEAN(xx)			xx = nil
-#endif
-
-
-#define HH_TAB_LIST_ANIMATION_DURATION		0.4
-#define HH_TAB_LIST_WIDTH					(320 - 80)
-#define HH_TAB_LIST_TRIGGER_OFFSET			75
-
-#define HH_STATUS_BAR_TINT_HACK_ENABLED		1
 
 #if HH_STATUS_BAR_TINT_HACK_ENABLED
 static NSString * const kBackgroundNavigationControllerKey = @"backgroundNavigationController";
@@ -73,6 +56,7 @@ static NSString * const kBackgroundNavigationControllerKey = @"backgroundNavigat
 {
 	struct {
 		BOOL shouldSelectViewController:1;
+		BOOL willSelectViewController:1;
 		BOOL didSelectViewController:1;
 	} _delegateFlags;
 }
@@ -141,6 +125,7 @@ static BOOL OSVersion6OrAbove = NO;
 		_selectedIndex = NSNotFound;
 		_tabListRevealed = NO;
 		_wasTabListRevealed = !_tabListRevealed;
+        _containerMayPan = YES;
 		_gestureRecognizers = [[NSMutableSet alloc] initWithCapacity:5];
 
 		self.viewControllers = viewControllers;
@@ -186,7 +171,7 @@ static BOOL OSVersion6OrAbove = NO;
     layoutContainerView.autoresizesSubviews = YES;
     layoutContainerView.clipsToBounds = YES;
 
-	layoutContainerView.backgroundColor = [UIColor underPageBackgroundColor];
+	layoutContainerView.backgroundColor = [UIColor viewFlipsideBackgroundColor];
 
 	self.view = HH_AUTORELEASE(layoutContainerView);
 
@@ -267,6 +252,7 @@ static BOOL OSVersion6OrAbove = NO;
 @synthesize delegate = _delegate;
 @synthesize selectedIndex = _selectedIndex;
 @synthesize tabListRevealed = _tabListRevealed;
+@synthesize containerMayPan = _containerMayPan;
 @synthesize wasTabListRevealed = _wasTabListRevealed;
 @synthesize panOriginX = _panOriginX;
 @synthesize animationInProgress = _animationInProgress;
@@ -278,6 +264,7 @@ static BOOL OSVersion6OrAbove = NO;
 	_delegate = delegate;
 
 	_delegateFlags.shouldSelectViewController = [delegate respondsToSelector:@selector(tabListController:shouldSelectViewController:)];
+	_delegateFlags.willSelectViewController = [delegate respondsToSelector:@selector(tabListController:willSelectViewController:)];
 	_delegateFlags.didSelectViewController = [delegate respondsToSelector:@selector(tabListController:didSelectViewController:)];
 }
 
@@ -371,6 +358,16 @@ static BOOL OSVersion6OrAbove = NO;
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex animated:(BOOL)animated
 {
+    if (_delegateFlags.willSelectViewController) {
+        UIViewController *viewController = nil;
+
+        if (selectedIndex != NSNotFound) {
+            viewController = [self.viewControllers objectAtIndex:selectedIndex];
+        }
+
+        [self.delegate tabListController:self willSelectViewController:viewController];
+    }
+    
 	self.selectedIndex = selectedIndex;
 
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
@@ -387,7 +384,7 @@ static BOOL OSVersion6OrAbove = NO;
 		}
 	}
 
-	[self setTabListRevealed:self.tabListRevealed animated:animated];
+	[self setTabListRevealed:NO animated:animated];
 }
 
 - (CGRect)topViewControllerFrame
@@ -407,7 +404,7 @@ static BOOL OSVersion6OrAbove = NO;
 {
 	BOOL wasTabListRevealed = self.wasTabListRevealed;
 
-	self.tabListRevealed = tabListRevealed;
+    self.tabListRevealed = tabListRevealed;
 	self.wasTabListRevealed = tabListRevealed;
 
 	UIView *view = self.view;
@@ -427,7 +424,6 @@ static BOOL OSVersion6OrAbove = NO;
 	UIViewController *selectedViewController = [self selectedViewController];
 	UIViewController *lastSelectedViewController = [self lastSelectedViewController];
 	CGRect topViewControllerFrame = [self topViewControllerFrame];
-	BOOL didSelectViewController = _delegateFlags.didSelectViewController;
 
 	if (selectedViewController != lastSelectedViewController) {
 
@@ -491,7 +487,7 @@ static BOOL OSVersion6OrAbove = NO;
 			[selectedView setFrame:[selectedContainerView bounds]];
 			[selectedView setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
 
-			[selectedContainerView addSubview:selectedView];
+			[selectedContainerView.contentView addSubview:selectedView];
 
 			[view addSubview:selectedContainerView];
 
@@ -516,18 +512,19 @@ static BOOL OSVersion6OrAbove = NO;
 			[selectedViewController didMoveToParentViewController:self];
 
 			[lastContainerView removeFromSuperview];
+            [lastSelectedViewController.view removeFromSuperview];
 
 			[lastSelectedViewController removeFromParentViewController];
 
-			[self attachGestureRecognizersToController:selectedViewController];
+			[self installGestureRecognizers];
 
 			self.lastSelectedViewController = selectedViewController;
 
-			if (!tabListRevealed) {
+			if (!self.tabListRevealed) {
 				[tabListTabsView removeFromSuperview];
 			}
 
-			if (didSelectViewController) {
+			if (_delegateFlags.didSelectViewController) {
 				[self.delegate tabListController:self didSelectViewController:selectedViewController];
 			}
 		};
@@ -554,7 +551,7 @@ static BOOL OSVersion6OrAbove = NO;
 		void (^completionBlock)(BOOL finished) = ^(BOOL finished) {
 			self.animationInProgress = NO;
 
-			if (!tabListRevealed) {
+			if (!self.tabListRevealed) {
 				[self.tabListTabsView removeFromSuperview];
 			}
 		};
@@ -570,9 +567,11 @@ static BOOL OSVersion6OrAbove = NO;
 		}
 
 		if (tabListRevealed != wasTabListRevealed) {
-			[self attachGestureRecognizersToController:[self selectedViewController]];
+			[self installGestureRecognizers];
 		}
 	}
+
+    [self.containerView.contentView setUserInteractionEnabled:(! self.tabListRevealed)];
 }
 
 - (void)applicationDidChangeStatusBarFrameNotification:(NSNotification*)notification
@@ -599,13 +598,32 @@ static BOOL OSVersion6OrAbove = NO;
     HH_RELEASE(gestureRecognizer);
 }
 
-- (void)attachPanGestureRecognizersToController:(UIViewController*)controller
+- (void)attachTapGestureRecognizerToView:(UIView*)view
 {
-	UINavigationController *navigationController = controller.navigationController;
+    UITapGestureRecognizer *gestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
+																						action:@selector(gestureRecognizerDidTap:)];
+    gestureRecognizer.cancelsTouchesInView = YES;
+    gestureRecognizer.delaysTouchesBegan = YES;
+    gestureRecognizer.delaysTouchesEnded = YES;
+    gestureRecognizer.delegate = self;
+
+	[view addGestureRecognizer:gestureRecognizer];
+
+	[self.gestureRecognizers addObject:gestureRecognizer];
+
+	HH_RELEASE(gestureRecognizer);
+}
+
+- (void)installGestureRecognizers
+{
+    [self removeGestureRecognizers];
+
+    UIViewController *selectedViewController = [self selectedViewController];
+	UINavigationController *navigationController = selectedViewController.navigationController;
 
 	if (navigationController == nil) {
-		if ([controller isKindOfClass:[UINavigationController class]]) {
-			navigationController = (UINavigationController*)controller;
+		if ([selectedViewController isKindOfClass:[UINavigationController class]]) {
+			navigationController = (UINavigationController*)selectedViewController;
 		}
 	}
 
@@ -616,64 +634,11 @@ static BOOL OSVersion6OrAbove = NO;
     BOOL tabListRevealed = self.tabListRevealed;
 
     if (tabListRevealed) {
-		UIViewController *frontmostController = controller;
-
-		if (navigationController != nil) {
-			frontmostController = [navigationController.viewControllers lastObject];
-		}
-
-        [self attachPanGestureRecognizerToView:frontmostController.view];
+        HHTabListContainerView *containerView = self.containerView;
+        
+        [self attachTapGestureRecognizerToView:containerView];
+        [self attachPanGestureRecognizerToView:containerView];
     }
-}
-
-- (void)attachTapGestureRecognizerToView:(UIView*)view
-{
-    UITapGestureRecognizer *gestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
-																						action:@selector(gestureRecognizerDidTap:)];
-    gestureRecognizer.cancelsTouchesInView = YES;
-    gestureRecognizer.delaysTouchesBegan = YES;
-    gestureRecognizer.delegate = self;
-
-	[view addGestureRecognizer:gestureRecognizer];
-
-	[self.gestureRecognizers addObject:gestureRecognizer];
-
-	HH_RELEASE(gestureRecognizer);
-}
-
-- (void)attachTapGestureRecognizersToController:(UIViewController *)controller
-{
-    BOOL tabListRevealed = self.tabListRevealed;
-
-	if (tabListRevealed) {
-		UINavigationController *navigationController = controller.navigationController;
-
-		if (navigationController == nil) {
-			if ([controller isKindOfClass:[UINavigationController class]]) {
-				navigationController = (UINavigationController*)controller;
-			}
-		}
-
-		if (navigationController != nil) {
-			[self attachTapGestureRecognizerToView:navigationController.navigationBar];
-		}
-
-		UIViewController *frontmostController = controller;
-
-		if (navigationController != nil) {
-			frontmostController = [navigationController.viewControllers lastObject];
-		}
-
-        [self attachTapGestureRecognizerToView:frontmostController.view];
-	}
-}
-
-- (void)attachGestureRecognizersToController:(UIViewController*)controller
-{
-    [self removeGestureRecognizers];
-
-    [self attachPanGestureRecognizersToController:controller];
-    [self attachTapGestureRecognizersToController:controller];
 }
 
 - (void)removeGestureRecognizers
@@ -697,6 +662,15 @@ static BOOL OSVersion6OrAbove = NO;
 	}
 
     return shouldReceiveTouch;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+    if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        return self.containerMayPan;
+    }
+    
+    return YES;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer*)otherGestureRecognizer
@@ -756,9 +730,9 @@ static BOOL OSVersion6OrAbove = NO;
 
 - (void)gestureRecognizerDidTap:(UITapGestureRecognizer*)tapGesture
 {
-    self.tabListRevealed = ! self.tabListRevealed;
-
-    [self setTabListRevealed:self.tabListRevealed animated:YES];
+    if (tapGesture.state == UIGestureRecognizerStateEnded) {
+        [self setTabListRevealed:(! self.tabListRevealed) animated:YES];
+    }
 }
 
 
@@ -827,13 +801,6 @@ static BOOL OSVersion6OrAbove = NO;
 
 - (void)tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath
 {
-	self.tabListRevealed = NO;
-
-    [self setSelectedIndex:indexPath.row animated:YES];
-}
-
-- (NSIndexPath*)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath*)indexPath
-{
     BOOL result = YES;
 
     if (_delegateFlags.shouldSelectViewController) {
@@ -843,10 +810,7 @@ static BOOL OSVersion6OrAbove = NO;
     }
 
     if (result) {
-        return indexPath;
-    }
-    else {
-        return tableView.indexPathForSelectedRow;
+        [self setSelectedIndex:indexPath.row animated:YES];
     }
 }
 

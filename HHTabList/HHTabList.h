@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Pierre Bernard & Houdah Software s.à r.l.
+ * Copyright (c) 2013, Pierre Bernard & Houdah Software s.à r.l.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,51 +26,32 @@
  *
  */
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 
-@protocol HHTabListControllerDelegate;
+#define HH_TAB_LIST_ANIMATION_DURATION		0.4
+#define HH_TAB_LIST_WIDTH					(320 - 80)
+#define HH_TAB_LIST_TRIGGER_OFFSET			75
+
+#define HH_STATUS_BAR_TINT_HACK_ENABLED		1
 
 
-@interface HHTabListController : UIViewController
-
-- (id)initWithViewControllers:(NSArray*)viewControllers;
-
-@property (nonatomic, copy, readonly) NSArray *viewControllers;
-@property (nonatomic, assign, getter = isTabListRevealed, readonly) BOOL tabListRevealed;
-@property (nonatomic, assign) BOOL containerMayPan;
-
-#if HH_ARC_ENABLED
-@property (nonatomic, weak) id<HHTabListControllerDelegate> delegate;
-#else
-@property (nonatomic, assign) id<HHTabListControllerDelegate> delegate;
+#ifndef __has_feature
+#define __has_feature(x) 0
 #endif
 
+#if __has_feature(objc_arc) && __clang_major__ >= 3
+#define HH_ARC_ENABLED 1
+#endif
 
-- (UIViewController *)selectedViewController;
-- (void)setSelectedViewController:(UIViewController *)newSelectedViewController;
-- (void)setSelectedViewController:(UIViewController *)newSelectedViewController animated:(BOOL)animated;
-
-- (void)setTabListRevealed:(BOOL)tabListRevealed animated:(BOOL)animated;
-
-- (UIBarButtonItem*)revealTabListBarButtonItem;
-- (IBAction)revealTabList:(id)sender;
-
-@end
-
-
-@protocol HHTabListControllerDelegate <NSObject>
-
-@optional
-- (BOOL)tabListController:(HHTabListController*)tabListController shouldSelectViewController:(UIViewController*)viewController;
-- (void)tabListController:(HHTabListController*)tabListController willSelectViewController:(UIViewController*)viewController;
-- (void)tabListController:(HHTabListController*)tabListController didSelectViewController:(UIViewController*)viewController;
-
-@end
-
-
-@interface UIViewController (HHTabListController)
-
-- (HHTabListController*)tabListController;
-
-@end
+#if HH_ARC_ENABLED
+#define HH_RETAIN(xx)			(xx)
+#define HH_RELEASE(xx)			xx = nil
+#define HH_AUTORELEASE(xx)		(xx)
+#define HH_CLEAN(xx)			xx = nil
+#else
+#define HH_RETAIN(xx)			[xx retain]
+#define HH_RELEASE(xx)			[xx release], xx = nil
+#define HH_AUTORELEASE(xx)		[xx autorelease]
+#define HH_CLEAN(xx)			xx = nil
+#endif

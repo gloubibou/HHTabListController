@@ -28,6 +28,8 @@
 
 #import "HHTabListContainerView.h"
 
+#import "HHTabList.h"
+
 #import <QuartzCore/QuartzCore.h>
 
 
@@ -42,11 +44,39 @@
     
 	if (self) {
 		self.clipsToBounds = NO;
-		self.backgroundColor = [UIColor whiteColor];
+		self.backgroundColor = [UIColor viewFlipsideBackgroundColor];
 		self.opaque = YES;
+
+        UIView *contentView = [[UIView alloc] initWithFrame:[self bounds]];
+
+        [contentView setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
+
+        _contentView = contentView;
+
+        [self addSubview:contentView];
     }
+    
     return self;
 }
+
+
+#pragma mark -
+#pragma mark Finalization
+
+- (void)dealloc
+{
+	HH_RELEASE(_contentView);
+
+#if !HH_ARC_ENABLED
+    [super dealloc];
+#endif
+}
+
+
+#pragma mark -
+#pragma mark Accessors
+
+@synthesize contentView = _contentView;
 
 
 #pragma mark -
