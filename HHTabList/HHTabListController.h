@@ -38,9 +38,9 @@
 - (id)initWithViewControllers:(NSArray*)viewControllers backgroundImage:(UIImage *)backgroundImage;
 
 @property (nonatomic, copy, readonly) NSArray *viewControllers;
+@property (nonatomic, copy, readonly) UIImage *backgroundImage;
 @property (nonatomic, assign, getter = isTabListRevealed, readonly) BOOL tabListRevealed;
 @property (nonatomic, assign) BOOL containerMayPan;
-@property (nonatomic, copy) UIImage *backgroundImage;
 
 #if HH_ARC_ENABLED
 @property (nonatomic, weak) id<HHTabListControllerDelegate> delegate;
