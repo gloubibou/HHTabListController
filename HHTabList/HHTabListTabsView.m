@@ -35,6 +35,11 @@
 
 - (id)initWithFrame:(CGRect)frame
 {
+    return [self initWithFrame:frame andBackgroundImage:[UIImage imageNamed:@"darkPattern"]];
+}
+
+- (id)initWithFrame:(CGRect)frame andBackgroundImage:(UIImage *)backgroundImage
+{
     self = [super initWithFrame:frame style:UITableViewStylePlain];
 
     if (self) {
@@ -42,8 +47,8 @@
         
         // darkPattern.png obtained from http://subtlepatterns.com/classy-fabric/
         // Made by Richard Tabor http://www.purtypixels.com/
-		self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"darkPattern"]];
 		self.separatorColor = [UIColor clearColor];
+        self.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
     }
     
 	return self;

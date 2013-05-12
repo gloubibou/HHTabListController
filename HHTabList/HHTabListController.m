@@ -119,6 +119,11 @@ static BOOL OSVersion6OrAbove = NO;
 
 - (id)initWithViewControllers:(NSArray*)viewControllers
 {
+    return [self initWithViewControllers:viewControllers backgroundImage:nil];
+}
+
+- (id)initWithViewControllers:(NSArray*)viewControllers backgroundImage:(UIImage *)backgroundImage
+{
     self = [super initWithNibName:nil bundle:nil];
 
     if (self) {
@@ -127,6 +132,7 @@ static BOOL OSVersion6OrAbove = NO;
 		_wasTabListRevealed = !_tabListRevealed;
         _containerMayPan = YES;
 		_gestureRecognizers = [[NSMutableSet alloc] initWithCapacity:5];
+    _backgroundImage = backgroundImage;
 
 		self.viewControllers = viewControllers;
 
@@ -176,7 +182,7 @@ static BOOL OSVersion6OrAbove = NO;
 	self.view = HH_AUTORELEASE(layoutContainerView);
 
 	CGRect tableFrame = frame;
-	HHTabListTabsView *tabListTabsView = [[HHTabListTabsView alloc] initWithFrame:tableFrame];
+  HHTabListTabsView *tabListTabsView = [[HHTabListTabsView alloc] initWithFrame:tableFrame andBackgroundImage:_backgroundImage];
 
 	tabListTabsView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 
@@ -237,6 +243,7 @@ static BOOL OSVersion6OrAbove = NO;
 	HH_RELEASE(_gestureRecognizers);
 	HH_RELEASE(_tabListTabsView);
 	HH_RELEASE(_containerView);
+  HH_RELEASE(_backgroundImage);
 
 #if !HH_ARC_ENABLED
     [super dealloc];
@@ -258,6 +265,7 @@ static BOOL OSVersion6OrAbove = NO;
 @synthesize animationInProgress = _animationInProgress;
 @synthesize gestureRecognizers = _gestureRecognizers;
 @synthesize tabListTabsView = _tabListTabsView;
+@synthesize backgroundImage = _backgroundImage;
 
 - (void)setDelegate:(id<HHTabListControllerDelegate>)delegate
 {

@@ -31,4 +31,6 @@
 
 @interface HHTabListTabsView : UITableView
 
+- (id)initWithFrame:(CGRect)frame andBackgroundImage:(UIImage *)backgroundImage;
+
 @end
