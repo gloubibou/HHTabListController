@@ -24,6 +24,7 @@
 		8FE57C21173FD3F300718EFE /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8FE57C1F173FD3F300718EFE /* ViewController.xib */; };
 		8FE57C27173FD40000718EFE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FE57C26173FD40000718EFE /* ViewController.m */; };
 		8FE57C28173FD40E00718EFE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8FE57C24173FD3F900718EFE /* main.m */; };
+		8FE57C2A173FD6A100718EFE /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8FE57C29173FD6A100718EFE /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		8FE57C24173FD3F900718EFE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = main.m; path = "Demo App/main.m"; sourceTree = SOURCE_ROOT; };
 		8FE57C25173FD40000718EFE /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = "Demo App/ViewController.h"; sourceTree = "<group>"; };
 		8FE57C26173FD40000718EFE /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ViewController.m; path = "Demo App/ViewController.m"; sourceTree = "<group>"; };
+		8FE57C29173FD6A100718EFE /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -135,6 +137,7 @@
 		8F61E4CC15A19F6700C0DBF0 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				8FE57C29173FD6A100718EFE /* Default-568h@2x.png */,
 				8FE57C22173FD3F900718EFE /* HHTabList-Info.plist */,
 				8FE57C23173FD3F900718EFE /* HHTabList-Prefix.pch */,
 				8FE57C1C173FD3EA00718EFE /* InfoPlist.strings */,
@@ -228,6 +231,7 @@
 				8F80350915A4D836008DA1AD /* list-landscape@2x.png in Resources */,
 				8FE57C1E173FD3EA00718EFE /* InfoPlist.strings in Resources */,
 				8FE57C21173FD3F300718EFE /* ViewController.xib in Resources */,
+				8FE57C2A173FD6A100718EFE /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
