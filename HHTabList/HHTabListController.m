@@ -138,7 +138,7 @@ static BOOL OSVersion6OrAbove = NO;
 		self.viewControllers = viewControllers;
 
 		if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-		    self.contentSizeForViewInPopover = CGSizeMake(320.0f, 1024.0f);
+		    self.contentSizeForViewInPopover = CGSizeMake(320.0f, 1004.0f);
 		}
 		else {
 			self.wantsFullScreenLayout = YES;
@@ -153,27 +153,19 @@ static BOOL OSVersion6OrAbove = NO;
 - (void)loadView
 {
 	CGRect frame = CGRectZero;
+	CGRect applicationFrame = HHScreenBounds();
+	CGFloat statusBarHeight = HHStatusBarHeight();
 
-	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-		CGSize contentSizeForViewInPopover = self.contentSizeForViewInPopover;
+	applicationFrame.size.height -= statusBarHeight;
 
-		frame = CGRectMake(0.0, 0.0, contentSizeForViewInPopover.width, contentSizeForViewInPopover.height);
+	if (self.wantsFullScreenLayout) {
+		applicationFrame.origin.y += statusBarHeight;
 	}
-	else {
-		CGRect applicationFrame = HHScreenBounds();
-		CGFloat statusBarHeight = HHStatusBarHeight();
 
-		applicationFrame.size.height -= statusBarHeight;
-
-		if (self.wantsFullScreenLayout) {
-			applicationFrame.origin.y += statusBarHeight;
-		}
-
-		frame = applicationFrame;
-	}
+	frame = applicationFrame;
 
     HHTabListView *layoutContainerView = [[HHTabListView alloc] initWithFrame:frame];
-
+	
 	layoutContainerView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     layoutContainerView.autoresizesSubviews = YES;
     layoutContainerView.clipsToBounds = YES;
@@ -497,12 +489,26 @@ static BOOL OSVersion6OrAbove = NO;
 			[selectedView setFrame:[selectedContainerView bounds]];
 			[selectedView setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
 
-			[selectedContainerView.contentView addSubview:selectedView];
+			[selectedViewController beginAppearanceTransition:YES animated:NO];
+			{
+				[selectedContainerView.contentView addSubview:selectedView];
+				[view addSubview:selectedContainerView];
+			}
+			[selectedViewController endAppearanceTransition];
 
-			[view addSubview:selectedContainerView];
+			[selectedViewController didMoveToParentViewController:self];
 
 			self.containerView = selectedContainerView;
 		}
+
+		[lastSelectedViewController beginAppearanceTransition:NO animated:NO];
+		{
+			[lastContainerView removeFromSuperview];
+			[lastSelectedViewController.view removeFromSuperview];
+		}
+		[lastSelectedViewController endAppearanceTransition];
+
+		[lastSelectedViewController removeFromParentViewController];
 
 		void (^animationBlock)(void) = ^{
 			self.animationInProgress = YES;
@@ -518,13 +524,6 @@ static BOOL OSVersion6OrAbove = NO;
 		void (^completionBlock)(BOOL finished) = ^(BOOL finished) {
 			self.animationInProgress = NO;
 			self.tabListTabsView.userInteractionEnabled = YES;
-
-			[selectedViewController didMoveToParentViewController:self];
-
-			[lastContainerView removeFromSuperview];
-            [lastSelectedViewController.view removeFromSuperview];
-
-			[lastSelectedViewController removeFromParentViewController];
 
 			[self installGestureRecognizers];
 
