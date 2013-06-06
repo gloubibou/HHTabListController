@@ -108,8 +108,27 @@
 
 - (void)setSelectionBackgroundColor:(UIColor *)selectionBackgroundColor
 {
-	_selectionBackgroundColor				= HH_RETAIN(selectionBackgroundColor);
+	_selectionBackgroundColor = HH_RETAIN(selectionBackgroundColor);
 
+	[self updateSelectionBackgroundViews];
+}
+
+#pragma mark -
+#pragma mark Lifecycle
+
+- (void)prepareForReuse
+{
+	[super prepareForReuse];
+
+	[self updateSelectionBackgroundViews];
+}
+
+#pragma mark -
+#pragma mark Instance methods
+
+- (void)updateSelectionBackgroundViews
+{
+	UIColor *selectionBackgroundColor	= self.selectionBackgroundColor;
 	UIView	*selectionBackgroundView	= self.selectionBackgroundView;
 	UIView	*separatorLineView			= self.separatorLineView;
 
