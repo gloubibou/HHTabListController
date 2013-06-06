@@ -28,6 +28,9 @@
 
 #import <UIKit/UIKit.h>
 
+
 @interface HHTabListCell : UITableViewCell
+
+@property (nonatomic, strong) UIColor *selectionBackgroundColor UI_APPEARANCE_SELECTOR;
 
 @end

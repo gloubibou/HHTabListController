@@ -28,46 +28,93 @@
 
 #import "HHTabListCell.h"
 
+#import "HHTabList.h"
+
+
+@interface HHTabListCell ()
+{
+	UIView	*_selectionBackgroundView;
+	UIView	*_separatorLineView;
+}
+
+@property (nonatomic, strong) UIView	*selectionBackgroundView;
+@property (nonatomic, strong) UIView	*separatorLineView;
+
+@end
 
 @implementation HHTabListCell
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-   
-	if (self) {
-		CGRect frame = self.bounds;
-		UIView *backgroundView = [[UIView alloc] initWithFrame:frame];
-		
-		backgroundView.opaque = YES;
-		backgroundView.backgroundColor = [UIColor orangeColor];
-		backgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-		
-//		self.backgroundView = backgroundView;
-		self.selectedBackgroundView = backgroundView;
-		
-		CGRect lineFrame = self.bounds;
-		
-		lineFrame.origin.y += lineFrame.size.height;
-		lineFrame.size.height = 1.0;
-		
-		UIView *lineView = [[UIView alloc] initWithFrame:lineFrame];
-		
-		lineView.opaque = YES;
-		lineView.backgroundColor = [UIColor orangeColor];
-		lineView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+	self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
 
-		[self addSubview:lineView];
-    }
-	
-    return self;
+	if (self) {
+		CGRect	frame						= self.bounds;
+		UIView	*selectionBackgroundView	= [[UIView alloc] initWithFrame:frame];
+
+		selectionBackgroundView.opaque				= YES;
+		selectionBackgroundView.backgroundColor		= [UIColor orangeColor];
+		selectionBackgroundView.autoresizingMask	= UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+
+		self.selectionBackgroundView				= selectionBackgroundView;
+		self.selectedBackgroundView					= selectionBackgroundView;
+
+		CGRect	lineFrame					= self.bounds;
+
+		lineFrame.origin.y							+= lineFrame.size.height;
+		lineFrame.size.height						= 1.0;
+
+		UIView	*separatorLineView			= [[UIView alloc] initWithFrame:lineFrame];
+
+		separatorLineView.opaque					= YES;
+		separatorLineView.backgroundColor			= [UIColor orangeColor];
+		separatorLineView.autoresizingMask			= UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+
+		self.separatorLineView						= separatorLineView;
+
+		[self addSubview:separatorLineView];
+	}
+
+	return self;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {
-    [super setSelected:selected animated:animated];
+	[super setSelected:selected animated:animated];
 
-    // Configure the view for the selected state
+	// Configure the view for the selected state
+}
+
+#pragma mark -
+#pragma mark Finalization
+
+- (void)dealloc
+{
+	HH_RELEASE(_selectionBackgroundView);
+	HH_RELEASE(_separatorLineView);
+	HH_RELEASE(_selectionBackgroundColor);
+
+#if !HH_ARC_ENABLED
+	[super dealloc];
+#endif
+}
+
+#pragma mark -
+#pragma mark Accessors
+
+@synthesize selectionBackgroundView		= _selectionBackgroundView;
+@synthesize separatorLineView			= _separatorLineView;
+@synthesize selectionBackgroundColor	= _selectionBackgroundColor;
+
+- (void)setSelectionBackgroundColor:(UIColor *)selectionBackgroundColor
+{
+	_selectionBackgroundColor				= HH_RETAIN(selectionBackgroundColor);
+
+	UIView	*selectionBackgroundView	= self.selectionBackgroundView;
+	UIView	*separatorLineView			= self.separatorLineView;
+
+	selectionBackgroundView.backgroundColor = selectionBackgroundColor;
+	separatorLineView.backgroundColor		= selectionBackgroundColor;
 }
 
 @end
