@@ -41,7 +41,7 @@ The code presented here is identical to the one used in the shipped product.
     LICENSE
   }
   s.author       = 'Pierre Bernard'
-  s.source       = { :git => "https://github.com/gloubibou/HHTabListController.git", :tag => "1.1.1" }
+  s.source       = { :git => "https://github.com/gloubibou/HHTabListController.git", :tag => "v1.1.1" }
   s.platform     = :ios, '5.1'
   s.source_files = 'Classes', 'HHTabList/**/*.{h,m}'
   s.public_header_files = 'HHTabList/**/*.h'
