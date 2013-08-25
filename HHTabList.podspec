@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "HHTabList"
-  s.version      = "0.0.1"
+  s.version      = "1.1.1"
   s.summary      = "HHTabList - Vertical tab view controller."
   s.description  = <<-DESC
                    HHTabListController is an implementation of a tab controller where tabs are listed in a table view hidden behind the active view controller. The list of tabs may be revealed using a swipe gesture or by touching a button.
@@ -41,7 +41,7 @@ The code presented here is identical to the one used in the shipped product.
     LICENSE
   }
   s.author       = 'Pierre Bernard'
-  s.source       = { :git => "https://github.com/gloubibou/HHTabListController.git", :tag => "0.0.1" }
+  s.source       = { :git => "https://github.com/gloubibou/HHTabListController.git", :tag => "1.1.1" }
   s.platform     = :ios, '5.1'
   s.source_files = 'Classes', 'HHTabList/**/*.{h,m}'
   s.public_header_files = 'HHTabList/**/*.h'
